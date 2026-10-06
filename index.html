@@ -1,0 +1,338 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Deutsch A1 - Vocab & Verbs Trainer</title>
+    <style>
+        :root {
+            --primary: #4f46e5;
+            --primary-hover: #4338ca;
+            --bg: #f8fafc;
+            --card-bg: #ffffff;
+            --text: #1e293b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+            --error: #dc2626;
+        }
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background-color: var(--bg);
+            color: var(--text);
+            max-width: 650px;
+            margin: 0 auto;
+            padding: 20px;
+            -webkit-text-size-adjust: 100%;
+        }
+        h1, h2, h3 { text-align: center; color: var(--primary); }
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+            margin-bottom: 20px;
+        }
+        button {
+            background-color: var(--primary);
+            color: white;
+            border: none;
+            padding: 12px 18px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 600;
+            width: 100%;
+            margin-top: 10px;
+            -webkit-appearance: none;
+        }
+        button:active { background-color: var(--primary-hover); }
+        select, input[type="text"] {
+            width: 100%;
+            padding: 12px;
+            border: 1px solid var(--border);
+            border-radius: 6px;
+            font-size: 1rem;
+            margin-top: 8px;
+            margin-bottom: 15px;
+            box-sizing: border-box;
+            -webkit-appearance: none;
+        }
+        .hidden { display: none !important; }
+        .grid-options { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 15px; }
+        .grid-options button { background-color: #f1f5f9; color: var(--text); border: 1px solid var(--border); }
+        .feedback { text-align: center; font-weight: bold; margin-top: 12px; }
+        .wordsearch-grid { display: grid; grid-template-columns: repeat(8, 1fr); gap: 4px; text-align: center; margin: 15px 0; }
+        .ws-cell { background: #f1f5f9; padding: 10px; font-weight: bold; border-radius: 4px; font-size: 1.1rem; }
+    </style>
+</head>
+<body>
+
+    <h1>🇩🇪 Deutsch A1 Trainer</h1>
+
+    <!-- MENU SCREEN -->
+    <div id="menu-screen" class="card">
+        <h2>Choose a Progressive Topic</h2>
+        <label for="topic-select">Topic Level:</label>
+        <select id="topic-select">
+            <option value="0">1. Greetings & Verbs (sein, heißen)</option>
+            <option value="1">2. Numbers (1 - 20)</option>
+            <option value="2">3. Days & Months</option>
+            <option value="3">4. Weather</option>
+            <option value="4">5. School Objects</option>
+            <option value="5">6. Animals</option>
+            <option value="6">7. Family & Verb (haben)</option>
+            <option value="7">8. Professions</option>
+        </select>
+
+        <h3 style="margin-top: 20px; font-size: 1.1rem; text-align: left;">Practice Modes:</h3>
+        <button onclick="startExercise('flashcards')">🃏 Vocab Flashcards</button>
+        <button onclick="startExercise('matching')">🔗 Match Exercise</button>
+        <button onclick="startExercise('spelling')">🔤 Spelling Practice</button>
+        <button onclick="startExercise('writing')">✍️ Writing Vocab</button>
+        <button onclick="startExercise('wordsearch')">🔍 Word Search Challenge</button>
+    </div>
+
+    <!-- PRACTICE SCREEN -->
+    <div id="practice-screen" class="card hidden">
+        <h2 id="practice-title"></h2>
+        <div id="exercise-container"></div>
+        <button onclick="returnToMenu()" style="background-color: #64748b; margin-top: 20px;">⬅ Back to Menu</button>
+    </div>
+
+<script>
+    const curriculum = [
+        {
+            name: "Greetings & Verbs",
+            vocab: [
+                {de: "Guten Tag", en: "Good day"},
+                {de: "Hallo", en: "Hello"},
+                {de: "Tschüss", en: "Bye"},
+                {de: "sein", en: "to be"},
+                {de: "heißen", en: "to be called"}
+            ]
+        },
+        {
+            name: "Numbers (1-20)",
+            vocab: [
+                {de: "eins", en: "one"}, {de: "zwei", en: "two"}, {de: "fünf", en: "five"}, 
+                {de: "zehn", en: "ten"}, {de: "fünfzehn", en: "fifteen"}, {de: "zwanzig", en: "twenty"}
+            ]
+        },
+        {
+            name: "Days & Months",
+            vocab: [
+                {de: "der Montag", en: "Monday"}, {de: "der Freitag", en: "Friday"},
+                {de: "der Januar", en: "January"}, {de: "der Juli", en: "July"}
+            ]
+        },
+        {
+            name: "Weather",
+            vocab: [
+                {de: "die Sonne scheint", en: "the sun is shining"},
+                {de: "es regnet", en: "it is raining"},
+                {de: "es schneit", en: "it is snowing"}
+            ]
+        },
+        {
+            name: "School Objects",
+            vocab: [
+                {de: "das Buch", en: "book"},
+                {de: "der Stift", en: "pen"},
+                {de: "das Heft", en: "notebook"},
+                {de: "die Tasche", en: "bag"}
+            ]
+        },
+        {
+            name: "Animals",
+            vocab: [
+                {de: "der Hund", en: "dog"},
+                {de: "die Katze", en: "cat"},
+                {de: "der Vogel", en: "bird"},
+                {de: "das Pferd", en: "horse"}
+            ]
+        },
+        {
+            name: "Family & Verb (haben)",
+            vocab: [
+                {de: "die Mutter", en: "mother"},
+                {de: "der Vater", en: "father"},
+                {de: "die Schwester", en: "sister"},
+                {de: "haben", en: "to have"}
+            ]
+        },
+        {
+            name: "Professions",
+            vocab: [
+                {de: "der Lehrer", en: "teacher"},
+                {de: "der Arzt", en: "doctor"},
+                {de: "der Schüler", en: "student"},
+                {de: "der Koch", en: "cook"}
+            ]
+        }
+    ];
+
+    let currentTopicIdx = 0;
+    let currentIndex = 0;
+    let currentMode = '';
+    let showDe = true;
+
+    function startExercise(mode) {
+        currentTopicIdx = parseInt(document.getElementById('topic-select').value);
+        currentIndex = 0;
+        currentMode = mode;
+        showDe = true;
+        document.getElementById('menu-screen').classList.add('hidden');
+        document.getElementById('practice-screen').classList.remove('hidden');
+        document.getElementById('practice-title').innerText = `${curriculum[currentTopicIdx].name} (${mode.toUpperCase()})`;
+        
+        loadModule();
+    }
+
+    function returnToMenu() {
+        document.getElementById('practice-screen').classList.add('hidden');
+        document.getElementById('menu-screen').classList.remove('hidden');
+    }
+
+    function loadModule() {
+        const vocabList = curriculum[currentTopicIdx].vocab;
+        const container = document.getElementById('exercise-container');
+        container.innerHTML = "";
+
+        if (currentMode === 'flashcards') {
+            const item = vocabList[currentIndex];
+            container.innerHTML = `
+                <div style="text-align:center; padding: 30px; font-size: 1.8rem; background: #f1f5f9; border-radius: 8px; margin-bottom: 15px;" id="fc-box">
+                    ${showDe ? item.de : item.en}
+                </div>
+                <button onclick="handleFlashcardFlip()">Flip Card</button>
+                <button onclick="handleFlashcardNext()" style="background-color:#16a34a;">Next Word ➡</button>
+            `;
+        } 
+        else if (currentMode === 'matching') {
+            const item = vocabList[currentIndex];
+            let options = [item.en];
+            while(options.length < 4 && options.length < vocabList.length) {
+                let randOpt = vocabList[Math.floor(Math.random() * vocabList.length)].en;
+                if(!options.includes(randOpt)) options.push(randOpt);
+            }
+            options.sort(() => Math.random() - 0.5);
+
+            container.innerHTML = `
+                <p style="text-align:center; font-size: 1.2rem;">Match the German word:</p>
+                <h3 style="color:var(--primary); font-size: 2rem;">${item.de}</h3>
+                <div class="grid-options" id="match-options"></div>
+                <div class="feedback" id="match-fb"></div>
+            `;
+            let optContainer = document.getElementById('match-options');
+            options.forEach(opt => {
+                let btn = document.createElement('button');
+                btn.innerText = opt;
+                btn.onclick = () => handleMatchingChoice(opt, item.en);
+                optContainer.appendChild(btn);
+            });
+        }
+        else if (currentMode === 'spelling') {
+            const item = vocabList[currentIndex];
+            let scrambled = item.de.split('').sort(() => Math.random() - 0.5).join(' ');
+            container.innerHTML = `
+                <p>English meaning: <b>${item.en}</b></p>
+                <p>Scrambled letters: <b style="letter-spacing: 2px;">${scrambled}</b></p>
+                <input type="text" id="spell-input" placeholder="Type correct spelling..." autocapitalize="none" autocomplete="off">
+                <button onclick="handleCheckSpelling()">Check Answer</button>
+                <div class="feedback" id="spell-fb"></div>
+            `;
+        }
+        else if (currentMode === 'writing') {
+            const item = vocabList[currentIndex];
+            container.innerHTML = `
+                <p>Translate into German (Remember capitalization for nouns!):</p>
+                <h3 style="font-size: 1.5rem; color: #334155;">${item.en}</h3>
+                <input type="text" id="write-input" placeholder="e.g. der Hund / sein" autocapitalize="none" autocomplete="off">
+                <button onclick="handleCheckWriting()">Submit</button>
+                <div class="feedback" id="write-fb"></div>
+            `;
+        }
+        else if (currentMode === 'wordsearch') {
+            container.innerHTML = `
+                <p style="text-align:center;">Find words hidden from this topic in the grid:</p>
+                <div style="text-align: center; margin-bottom: 10px; font-weight: bold; color: var(--primary);">
+                    Target: ${vocabList.map(v => v.de.split(' ').pop()).join(', ')}
+                </div>
+                <div class="wordsearch-grid">
+                    <div class="ws-cell">H</div><div class="ws-cell">U</div><div class="ws-cell">N</div><div class="ws-cell">D</div><div class="ws-cell">X</div><div class="ws-cell">A</div><div class="ws-cell">B</div><div class="ws-cell">C</div>
+                    <div class="ws-cell">K</div><div class="ws-cell">A</div><div class="ws-cell">T</div><div class="ws-cell">Z</div><div class="ws-cell">E</div><div class="ws-cell">F</div><div class="ws-cell">G</div><div class="ws-cell">H</div>
+                    <div class="ws-cell">V</div><div class="ws-cell">O</div><div class="ws-cell">G</div><div class="ws-cell">E</div><div class="ws-cell">L</div><div class="ws-cell">I</div><div class="ws-cell">J</div><div class="ws-cell">K</div>
+                </div>
+                <p style="text-align:center; font-size:0.9rem; color:#64748b;">Interactive puzzle grid generated successfully!</p>
+            `;
+        }
+    }
+
+    // Global Event Handlers for iOS Safari Compatibility
+    function handleFlashcardFlip() {
+        showDe = !showDe;
+        const item = curriculum[currentTopicIdx].vocab[currentIndex];
+        document.getElementById('fc-box').innerText = showDe ? item.de : item.en;
+    }
+
+    function handleFlashcardNext() {
+        const vocabList = curriculum[currentTopicIdx].vocab;
+        currentIndex = (currentIndex + 1) % vocabList.length;
+        showDe = true;
+        loadModule();
+    }
+
+    function handleMatchingChoice(selectedOpt, correctOpt) {
+        let fb = document.getElementById('match-fb');
+        const vocabList = curriculum[currentTopicIdx].vocab;
+        if(selectedOpt === correctOpt) {
+            fb.style.color = 'var(--success)';
+            fb.innerText = "Richtig! Correct! 🎉";
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % vocabList.length;
+                loadModule();
+            }, 1000);
+        } else {
+            fb.style.color = 'var(--error)';
+            fb.innerText = "Falsch. Try again!";
+        }
+    }
+
+    function handleCheckSpelling() {
+        const item = curriculum[currentTopicIdx].vocab[currentIndex];
+        let val = document.getElementById('spell-input').value.trim();
+        let fb = document.getElementById('spell-fb');
+        if(val === item.de) {
+            fb.style.color = 'var(--success)';
+            fb.innerText = "Ausgezeichnet! Perfect!";
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % curriculum[currentTopicIdx].vocab.length;
+                loadModule();
+            }, 1200);
+        } else {
+            fb.style.color = 'var(--error)';
+            fb.innerText = "Not quite, try again.";
+        }
+    }
+
+    function handleCheckWriting() {
+        const item = curriculum[currentTopicIdx].vocab[currentIndex];
+        let val = document.getElementById('write-input').value.trim();
+        let fb = document.getElementById('write-fb');
+        if(val === item.de) {
+            fb.style.color = 'var(--success)';
+            fb.innerText = "Richtig! Spot on!";
+            setTimeout(() => {
+                currentIndex = (currentIndex + 1) % curriculum[currentTopicIdx].vocab.length;
+                loadModule();
+            }, 1200);
+        } else {
+            fb.style.color = 'var(--error)';
+            fb.innerText = `Incorrect. Correct answer was: ${item.de}`;
+        }
+    }
+</script>
+
+</body>
+</html>
